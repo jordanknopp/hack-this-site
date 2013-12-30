@@ -1,0 +1,54 @@
+import itertools
+
+#first, compile list of answers to match unscrambled permutations to
+def wordList(listFile):
+    allRows = []
+    f = open(listFile,"r")
+    lines = f.readlines()
+    for i in range(len(lines)):
+        allRows.append(lines[i].rstrip('\r\n')) #don't yet know if there is a cleaner solution...'
+    f.close()
+    return allRows
+
+
+#next, take input of the 10 words to unscramble
+def inputGrabber(fileName):
+    inputWords = []
+    f = open(fileName,"r")
+    lines = f.readlines()
+    for i in range(len(lines)):
+        inputWords.append(lines[i].rstrip('\n')) #don't yet know if there is a cleaner solution...'
+    f.close()
+    return inputWords
+
+
+def main():
+    answerSet = set(wordList("wordlist.txt")) #made into set so we can quickly find matches with intersection
+    unscramble = [] #temporary list of permutations in string form
+    output = [] #final output
+    inputWords = inputGrabber("wordstofind.txt")
+
+    for m in range(0,10):  #problem will have 10 input words
+        wordPermutations=(list(itertools.permutations(inputWords[m]))) # returns all possible permutations as list of tuples
+
+        for i in range(0,len(wordPermutations)): #outer loop covers all different permutations
+            s = ""
+            for j in range(0,len(wordPermutations[i])): # inner loop takes each and puts it into string
+                s = s + wordPermutations[i][j] #so they can be compared with answer files
+            unscramble.append(s)
+        output = output + list(answerSet.intersection(unscramble))
+        unscramble = [] #without clearing this, output gets duplicates... but this does not seem like the best way to do things
+
+#end of loops
+    #merge necessary because right intersection produces a set as output
+
+    formattedOutput = ""
+    for i in range(0,len(output)):
+        formattedOutput = formattedOutput + output[i].strip('"\'')
+        if (i < 9):
+            formattedOutput = formattedOutput + ","
+    print(formattedOutput)
+
+
+main()
+
