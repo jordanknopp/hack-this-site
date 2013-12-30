@@ -1,0 +1,106 @@
+#sudoku solver
+# sample input: ,4,1,9,3,,,5,8,6,,9,,2,5,,4,,,2,8,7,1,,,3,6,,8,,,7,,,9,,3,,6,5,8,2,7,1,4,,,,6,9,3,8,2,5,,5,2,1,4,,,6,9,,,3,2,,8,4,7,1,,,,,6,,,8,2
+
+#grid numbers are straightforward:
+# 0   1   2
+# 3   4   5
+# 6   7   8
+
+#    0 1 2   3 4 5   6 7 8      <-- col numbers
+
+#A  |_|4|1| |9|3|_| |_|5|8|
+#B  |6|_|9| |_|2|5| |_|4|_|
+#C  |_|2|8| |7|1|_| |_|3|6|
+#
+#D  |_|8|_| |_|7|_| |_|9|_|
+#E  |3|_|6| |5|8|2| |7|1|4|
+#F  |_|_|_| |6|9|3| |8|2|5|
+#
+#G  |_|5|2| |1|4|_| |_|6|9|
+#H  |_|_|3| |2|_|8| |4|7|1|
+#I  |_|_|_| |_|6|_| |_|8|2|
+#
+#^row letters
+
+# TODO LIST
+#1.  need an update method to call after each # is filled in so that minimum number of sets are constructed
+#        Must be called after autoComplete
+#        update method will update all three affected by most recent change
+#2.  should I keep puzzleList as a global?  can't really see a reason to yet
+
+def puzzleMaker(puzzle):
+    puzzleList = puzzle.split(',')  # couldn't see how to pass as a list, so I made it a string and change it here
+    for i in range(0, 81):
+        if (puzzleList[i]) == '':
+            puzzleList[i] = '0'
+    for i in range(0, 81):            # these two loops aren't really necessary but now I can work with 0-9 instead of strings and blanks,
+                                      # and that is more intuitive.
+        puzzleList[i] = int(puzzleList[i])
+
+    #defining everything for next step
+    rowA, rowB, rowC, rowD, rowE, rowF, rowG, rowH, rowI = [], [], [], [], [], [], [], [], []  # seems cumbersome
+    col1, col2, col3, col4, col5, col6, col7, col8, col9 = [], [], [], [], [], [], [], [], []  # will change this
+    grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8, grid9 = [], [], [], [], [], [], [], [], []  # if I see a better way
+    allRows, rowStartIndex = [rowA, rowB, rowC, rowD, rowE, rowF, rowG, rowH, rowI], [0, 9, 18, 27, 36, 45, 54, 63, 72]
+    allCols, colStartIndex = [col1, col2, col3, col4, col5, col6, col7, col8, col9], [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    allGrids, gridStartIndex = [grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8, grid9], [0, 3, 6, 27, 30, 33, 54, 57, 60]
+
+    #now build rows/cols/grids
+    for i in range(0, len(allRows)):
+        for j in range(rowStartIndex[i], (rowStartIndex[i] + 9)):  # Rows
+            allRows[i].append(puzzleList[j])
+
+    for i in range(0, len(allCols)):
+        for j in range(colStartIndex[i], (colStartIndex[i] + 73), 9):  # Cols
+            allCols[i].append(puzzleList[j])
+
+    for i in range(0, len(allGrids)):
+        for j in range(gridStartIndex[i], (gridStartIndex[i] + 19), 9):  # Grids
+            allGrids[i].append(puzzleList[j])
+            allGrids[i].append(puzzleList[j + 1])
+            allGrids[i].append(puzzleList[j + 2])
+    return allRows, allCols, allGrids
+
+
+def solve(allRows, allCols, allGrids):  # pass everything to this
+    completeSet = set([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    for i in range(0, 9):
+        if (len(completeSet.difference(set(allRows[i])))) == 1:  # 8/9 are filled in, so we fill in the last
+            for j in range(0, 9):
+                if (allRows[i][j]) == 0:
+                    allRows[i][j] = completeSet.difference(set(allRows[i])).pop()  # pop works: set is only 1 element
+            #update
+
+    for i in range(0, 9):
+        if (len(completeSet.difference(set(allCols[i])))) == 1:
+                if (allCols[i][j]) == 0:
+                    allCols[i][j] = completeSet.difference(set(allCols[i])).pop()
+            #update
+
+    for i in range(0, 9):
+        if (len(completeSet.difference(set(allGrids[i])))) == 1:
+            for j in range(0, 9):
+                if (allGrids[i][j]) == 0:
+                    allGrids[i][j] = completeSet.difference(set(allGrids[i])).pop()
+            #update
+
+
+def frequencyCounter(allRows):  # helps determine what the best number to look at is
+    frequency = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # note I'm using 10 values here, and skipping 0th
+    #  so I can get indices to align (e.g. frequency[4] tells me how many times 4 currently appears in the puzzle)
+    for i in range(0, 9):  # counting frequency of particular value
+        for j in range(0, 9):  # iterates through rowA, rowB, etc
+            for k in range(0, 9):  # iterates through each element in current row
+                if allRows[j][k] == i + 1:
+                    frequency[i + 1] = frequency[i + 1] + 1
+    return frequency
+
+
+def main():
+    allRows, allCols, allGrids = puzzleMaker(",4,1,9,3,,,5,8,6,,9,,2,5,,4,,,2,8,7,1,,,3,6,,8,,,7,,,9,,3,,6,5,8,2,7,1,4,,,,6,9,3,8,2,5,,5,2,1,4,,,6,9,,,3,2,,8,4,7,1,,,,,6,,,8,2")
+    solve(allRows, allCols, allGrids)
+    frequency = frequencyCounter(allRows)
+    print(frequency)
+
+main()
