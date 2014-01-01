@@ -30,26 +30,79 @@
 
 #    0 1 2   3 4 5   6 7 8      <-- col numbers
 
-#A  |_|4|1| |9|3|_| |_|5|8|                 |00|01|02| |03|04|05| |06|07|08|
-#B  |6|_|9| |_|2|5| |_|4|_|                 |09|10|11| |12|13|14| |15|16|17|
-#C  |_|2|8| |7|1|_| |_|3|6|                 |18|19|20| |21|22|23| |24|25|26|
+#0  |_|4|1| |9|3|_| |_|5|8|                 |00|01|02| |03|04|05| |06|07|08|
+#1  |6|_|9| |_|2|5| |_|4|_|                 |09|10|11| |12|13|14| |15|16|17|
+#2  |_|2|8| |7|1|_| |_|3|6|                 |18|19|20| |21|22|23| |24|25|26|
 #
-#D  |_|8|_| |_|7|_| |_|9|_|                 |27|28|29| |30|31|32| |33|34|35|
-#E  |3|_|6| |5|8|2| |7|1|4|                 |36|37|38| |39|40|41| |42|43|44|
-#F  |_|_|_| |6|9|3| |8|2|5|                 |45|46|47| |48|49|50| |51|52|53|
+#3  |_|8|_| |_|7|_| |_|9|_|                 |27|28|29| |30|31|32| |33|34|35|
+#4  |3|_|6| |5|8|2| |7|1|4|                 |36|37|38| |39|40|41| |42|43|44|
+#5  |_|_|_| |6|9|3| |8|2|5|                 |45|46|47| |48|49|50| |51|52|53|
 #
-#G  |_|5|2| |1|4|_| |_|6|9|                 |54|55|56| |57|58|59| |60|61|62|
-#H  |_|_|3| |2|_|8| |4|7|1|                 |63|64|65| |66|67|68| |69|70|71|
-#I  |_|_|_| |_|6|_| |_|8|2|                 |72|73|74| |75|76|77| |78|79|80|
+#6  |_|5|2| |1|4|_| |_|6|9|                 |54|55|56| |57|58|59| |60|61|62|
+#7  |_|_|3| |2|_|8| |4|7|1|                 |63|64|65| |66|67|68| |69|70|71|
+#8  |_|_|_| |_|6|_| |_|8|2|                 |72|73|74| |75|76|77| |78|79|80|
 #
-#^row letters
+#^row numbers
+
 
 # TODO LIST
 #1.  need an update method to call after each # is filled in so that minimum number of sets are constructed
 #        Must be called after autoComplete
-#        update method will update all three affected by most recent change
+#        update method will update all three affected by most recent change. update also needs to update grids.
 #2.  should I keep puzzleList as a global?  can't really see a reason to yet
 #3   define globals A=0,B=1,C=2, etc. so you can use them for row referencing
+
+# 0: 0,1,2,9,10,11,18,19,20
+
+puzzleList = []
+
+reverseGridDictionary = {0: [0, 1, 2, 9, 10, 11, 18, 19, 20],
+                         1: [3, 4, 5, 12, 13, 14, 21, 22, 23],
+                         2: [6, 7, 8, 15, 16, 17, 24, 25, 26],
+                         3: [27, 28, 29, 36, 37, 38, 45, 46, 47],
+                         4: [30, 31, 32, 39, 40, 41, 48, 49, 50],
+                         5: [33, 34, 35, 42, 43, 44, 51, 52, 53],
+                         6: [54, 55, 56, 63, 64, 65, 72, 73, 74],
+                         7: [57, 58, 59, 66, 67, 68, 75, 76, 77],
+                         8: [60, 61, 62, 69, 70, 71, 78, 79, 80]}
+gridDictionary = {0: 0, 1: 0, 2: 0, 9: 0, 10: 0, 11: 0, 18: 0, 19: 0, 20: 0, 3: 1, 4: 1, 5: 1,
+    12: 1, 13: 1, 14: 1, 21: 1, 22: 1, 23: 1, 6: 2, 7: 2, 8: 2, 15: 2, 16: 2, 17: 2, 24: 2, 25: 2,
+    26: 2, 27: 3, 28: 3, 29: 3, 36: 3, 37: 3, 38: 3, 45: 3, 46: 3, 47: 3, 30: 4, 31: 4, 32: 4, 39: 4,
+    40: 4, 41: 4, 48: 4, 49: 4, 50: 4, 33: 5, 34: 5, 35: 5, 42: 5, 43: 5, 44: 5, 51: 5, 52: 5, 53: 5,
+    54: 6, 55: 6, 56: 6, 63: 6, 64: 6, 65: 6, 72: 6, 73: 6, 74: 6, 57: 7, 58: 7, 59: 7, 66: 7, 67: 7,
+    68: 7, 75: 7, 76: 7, 77: 7, 60: 8, 61: 8, 62: 8, 69: 8, 70: 8, 71: 8, 78: 8, 79: 8, 80: 8}
+
+
+def crossSolve(puzzleList):
+    for i in range(1, 10):  # look for numbers 1-9
+        for j in range(0, 9):  # look at all grids
+            workingList = reverseGridDictionary[j]
+            zeroSpots = []
+            for k in range(0, 9):
+                if puzzleList[workingList[k]] == 0:
+                    zeroSpots.append(workingList[k])  # grab all the zeros, we need them for the next part
+            for k in range(0, 9):
+                if puzzleList[workingList[k]] == i:
+                    break
+            else:  # i is not in grid, proceed to cross-checking each 0spot with rows and cols around it
+                if len(zeroSpots) == 0:
+                    break
+                for m in range(0, len(zeroSpots)):
+                    focus = zeroSpots[m]  # in here, zeroSpots[m] will refer to an index in puzzleList that has a value of 0 right now
+                    for n in range(((focus / 9) * 9), (((focus / 9) * 9) + 9)):  # index/9 will return row #, and multiplying that result by 9
+                                                                                # gives starting index of row #
+                        if(puzzleList[n]) == i:  # something in this row matches the value we are hoping to fill in for the 0
+                            zeroSpots[m] = -1  # this acts as a flag marking it for deletion.  Deleting zero spots because if we
+                                               # are left with one zerospot, then it will be set to i, since above conditions have
+                                               # been met already
+                    for n in range(focus % 9, (focus % 9) + 73, 9):  # used to get other indices of that column
+                        if(puzzleList[n]) == i:
+                            zeroSpots[m] = -1
+                for m in range(0, zeroSpots.count(-1)):  # cleaning up the list
+                    zeroSpots.remove(-1)
+                if len(zeroSpots) == 1:
+                    puzzleList[zeroSpots[0]] == i
+
 
 def puzzleMaker(puzzle):
     puzzleList = puzzle.split(',')  # couldn't see how to pass as a list, so I made it a string and change it here
@@ -59,70 +112,12 @@ def puzzleMaker(puzzle):
     for i in range(0, 81):            # these two loops aren't really necessary but now I can work with 0-9 instead of strings and blanks,
                                       # and that is more intuitive.
         puzzleList[i] = int(puzzleList[i])
-
-    #defining everything for next step
-    rowA, rowB, rowC, rowD, rowE, rowF, rowG, rowH, rowI = [], [], [], [], [], [], [], [], []  # seems cumbersome
-    col1, col2, col3, col4, col5, col6, col7, col8, col9 = [], [], [], [], [], [], [], [], []  # will change this
-    grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8, grid9 = [], [], [], [], [], [], [], [], []  # if I see a better way
-    allRows, rowStartIndex = [rowA, rowB, rowC, rowD, rowE, rowF, rowG, rowH, rowI], [0, 9, 18, 27, 36, 45, 54, 63, 72]
-    allCols, colStartIndex = [col1, col2, col3, col4, col5, col6, col7, col8, col9], [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    allGrids, gridStartIndex = [grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8, grid9], [0, 3, 6, 27, 30, 33, 54, 57, 60]
-
-    #now build rows/cols/grids
-    for i in range(0, len(allRows)):
-        for j in range(rowStartIndex[i], (rowStartIndex[i] + 9)):  # Rows
-            allRows[i].append(puzzleList[j])
-
-    for i in range(0, len(allCols)):
-        for j in range(colStartIndex[i], (colStartIndex[i] + 73), 9):  # Cols
-            allCols[i].append(puzzleList[j])
-
-    for i in range(0, len(allGrids)):
-        for j in range(gridStartIndex[i], (gridStartIndex[i] + 19), 9):  # Grids
-            allGrids[i].append(puzzleList[j])
-            allGrids[i].append(puzzleList[j + 1])
-            allGrids[i].append(puzzleList[j + 2])
-    return allRows, allCols, allGrids
-
-
-def fillInNinth(allRows, allCols, allGrids):
-    completeSet = set([1, 2, 3, 4, 5, 6, 7, 8, 9])
-
-    for i in range(0, 9):
-        if (len(completeSet.difference(set(allRows[i])))) == 1:  # 8/9 are filled in, so we fill in the last
-            for j in range(0, 9):
-                if (allRows[i][j]) == 0:
-                    allRows[i][j] = completeSet.difference(set(allRows[i])).pop()  # pop works: set is only 1 element
-            #update
-
-    for i in range(0, 9):
-        if (len(completeSet.difference(set(allCols[i])))) == 1:
-                if (allCols[i][j]) == 0:
-                    allCols[i][j] = completeSet.difference(set(allCols[i])).pop()
-            #update
-
-    for i in range(0, 9):
-        if (len(completeSet.difference(set(allGrids[i])))) == 1:
-            for j in range(0, 9):
-                if (allGrids[i][j]) == 0:
-                    allGrids[i][j] = completeSet.difference(set(allGrids[i])).pop()
-            #update
-
-
-def frequencyCounter(allRows):  # helps determine what the best number to look at is
-    frequency = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # note I'm using 10 values here, and skipping 0th
-    #  so I can get indices to align (e.g. frequency[4] tells me how many times 4 currently appears in the puzzle)
-    for i in range(0, 9):  # counting frequency of particular value
-        for j in range(0, 9):  # iterates through rowA, rowB, etc
-            for k in range(0, 9):  # iterates through each element in current row
-                if allRows[j][k] == i + 1:
-                    frequency[i + 1] = frequency[i + 1] + 1
-    return frequency
+    return puzzleList
 
 
 def main():
-    allRows, allCols, allGrids = puzzleMaker(",4,1,9,3,,,5,8,6,,9,,2,5,,4,,,2,8,7,1,,,3,6,,8,,,7,,,9,,3,,6,5,8,2,7,1,4,,,,6,9,3,8,2,5,,5,2,1,4,,,6,9,,,3,2,,8,4,7,1,,,,,6,,,8,2")
-    fillInNinth(allRows, allCols, allGrids)
-    frequency = frequencyCounter(allRows)
+    puzzleList = puzzleMaker(",4,1,9,3,,,5,8,6,,9,,2,5,,4,,,2,8,7,1,,,3,6,,8,,,7,,,9,,3,,6,5,8,2,7,1,4,,,,6,9,3,8,2,5,,5,2,1,4,,,6,9,,,3,2,,8,4,7,1,,,,,6,,,8,2")
+    crossSolve(puzzleList)
+    print(puzzleList)
 
 main()
